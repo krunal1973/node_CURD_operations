@@ -1,8 +1,13 @@
+//logger file and morgan use code logger 
+import logger from "./utility/logger.js";
+import morgan from "morgan";
+
+import 'dotenv/config'
 import express from "express";
 
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3001;
 
 /*
 app.get("/",(req,res)=>{
@@ -13,11 +18,32 @@ to send data
 
 //CURD 
 app.use(express.json())
-let userData = []
-let nextId = 1
+
+//custom logger code 
+const morganFormat = ":method :url :status :response-time ms";
+
+app.use(
+  morgan(morganFormat, {
+    stream: {
+      write: (message) => {
+        const logObject = {
+          method: message.split(" ")[0],
+          url: message.split(" ")[1],
+          status: message.split(" ")[2],
+          responseTime: message.split(" ")[3],
+        };
+        logger.info(JSON.stringify(logObject));
+      },
+    },
+  })
+);
+
+
+let userData = [];
+let nextId = 1;
 // add user
 app.post('/users', (req,res)=>{
-    
+    logger.info(" A post request is made to add a new user")
     const {Name,Age} = req.body
     const newUser = {id: nextId++,Name,Age}
     userData.push(newUser)
